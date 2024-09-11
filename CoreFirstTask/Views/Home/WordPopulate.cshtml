@@ -1,0 +1,72 @@
+﻿
+@{
+    ViewData["Title"] = "WordPopulate";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+ 
+@using CoreFirstTask.Models
+@model IEnumerable<Order>
+
+<div class="pagetitle">
+
+    <h1>Home Page</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"> <a asp-action="Index" asp-controller="Home">Home</a> </li>
+            <li class="breadcrumb-item">Pages</li>
+            <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+    </nav>
+</div>
+<!-- End Page Title -->
+@*   public class Order
+    {
+        public Guid salesorderid { get; set; }
+
+        public string name { get; set; }
+        public string customername { get; set; }
+
+        public decimal totalamount { get; set; }
+
+        public int statecode { get; set; }
+    } *@
+<section class="section">
+    <h2>All Orders</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped " id="orderTable">
+            <thead>
+               <tr>
+                   <th>Order ID</th>
+                   <th>Name</th>
+                   <th>Customer Name</th>
+                    <th>Total Amount</th>
+                   <th>Status</th>
+                   <th>Action</th>
+               </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.salesorderid</td>
+                        <td>@item.name</td>
+                        <td>@item.customername</td>
+                        <td>@item.totalamount</td>
+                        <td>@item.statecode</td>
+                        <td>
+                            <a asp-action="DownloadOrderWordTemplate" asp-controller="Orders" asp-route-orderId="@item.salesorderid" class="btn btn-sm btn-primary">Download Order</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#orderTable").DataTable();
+        });
+    </script>
+}

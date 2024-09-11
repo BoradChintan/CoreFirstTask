@@ -1,0 +1,84 @@
+﻿
+@{
+    ViewData["Title"] = "PieChart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+ 
+<style>
+    .chart-container {
+        width: 600px;  
+        height: 600px; 
+        margin: auto;  
+    }
+
+    .toggle-button {
+        display: block;
+        margin: 20px auto;
+    }
+</style>
+
+@using CoreFirstTask.Models
+@using Newtonsoft.Json
+@model IEnumerable<ProductAmount>
+
+<section class="section">
+    <h3>Product Amount Distribution</h3>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"> <a asp-action="Index" asp-controller="Home">Home</a> </li>
+            <li class="breadcrumb-item">Pages</li>
+            <li class="breadcrumb-item active">Product Chart</li>
+        </ol>
+    </nav>
+   
+        <button class="toggle-button btn btn-outline-primary" id="toggleChartButton">Show Bar Chart</button>
+        <div class="chart-container">
+            <canvas id="myChart"></canvas>
+        </div>
+    
+</section>
+ 
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        
+        var data = @Html.Raw(JsonConvert.SerializeObject(Model));
+
+         
+        var labels = data.map(d => d.ProductName);
+        var values = data.map(d => d.TotalAmount);
+
+         
+
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var currentChartType = 'pie';
+
+        var chartConfig = {
+            type: currentChartType,
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56', '#FF5733', '#DAF7A6'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true  
+            }
+        };
+
+        var myChart = new Chart(ctx, chartConfig);
+
+        document.getElementById('toggleChartButton').addEventListener('click', function () {
+            currentChartType = currentChartType === 'pie' ? 'bar' : 'pie';
+            chartConfig.type = currentChartType;
+            myChart.destroy();  
+            myChart = new Chart(ctx, chartConfig); 
+            this.textContent = currentChartType === 'pie' ? 'Show Bar Chart' : 'Show Pie Chart';
+        });
+    </script>
+}

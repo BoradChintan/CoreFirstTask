@@ -1,0 +1,364 @@
+﻿
+@{
+    ViewData["Title"] = "SoftwareInventory";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using CoreFirstTask.Models
+@using Newtonsoft.Json
+@model Dictionary<int, CategoryModel>
+ 
+<div class="pagetitle d-flex justify-content-between">
+
+    <div id="loading-overlay" class="hidden">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading...</div>
+    </div>
+
+    <div>
+        <h1>Software Inventory</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"> <a asp-action="Index" asp-controller="Home">Home</a> </li>
+                <li class="breadcrumb-item">Pages</li>
+                <li class="breadcrumb-item active">Software Inventory</li>
+            </ol>
+        </nav>
+    </div>
+    <div>
+        <!-- Button trigger modal -->
+        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+            Add Software
+        </button>
+        
+    </div>
+   
+</div>
+<!-- End Page Title -->
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"> 
+
+                @*  Tab button *@
+                <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active btn " id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Add My software</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Add New Software</button>
+                    </li>
+                </ul>
+               
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="tab-content" id="pills-tabContent">
+
+                    <!-- Add My Software -->
+                    <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+
+                        <!-- Form for Add My Software -->
+                        <form asp-action="AddMySoftware" asp-controller="Software" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="new_category" class="form-label">Software Category</label>
+                                <select class="form-select addSoftwareCategory" id="new_category" name="new_category" required>
+                                    <option value="">--- Select Software category ---</option>
+                                    <option value="0">Accounting</option>
+                                    <option value="1">Advance Task Management</option>
+                                    <option value="2">AI</option>
+                                    <option value="3">Basic Task Management </option>
+                                    <option value="4">Collaboration </option>
+                                    <option value="5">Communication </option>
+                                    <option value="6">Personal Productivity  </option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="new_name" class="form-label">Software</label>
+                                <select class="form-select setSoftware" id="new_name" name="new_name" required>
+                                   
+                                </select>
+                            </div>
+ 
+
+                            <div class="mb-3">
+                                <label for="new_displayoption" class="form-label">Display Option</label>
+                                <select class="form-select" id="new_displayoption" name="new_displayoption" required>
+                                    <option value="">--Select Display Option--</option>
+                                    <option value="0">Current </option>
+                                    <option value="1">Future </option>
+                                    <option value="2">Other </option>
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="Submit" class="btn  btn-outline-primary">Save</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </form>
+                    </div>
+
+
+                    <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+                         
+                        <!-- Form for Add New Software -->
+                        <form asp-action="AddNewSoftware" asp-controller="Software" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="new_category" class="form-label">Software Category</label>
+                                <select class="form-select" id="new_category" name="new_category" required>
+                                    <option value="">--- Select Software category ---</option>
+                                    <option value="0">Accounting</option>
+                                    <option value="1">Advance Task Management</option>
+                                    <option value="2">AI</option>
+                                    <option value="3">Basic Task Management </option>
+                                    <option value="4">Collaboration </option>
+                                    <option value="5">Communication </option>
+                                    <option value="6">Personal Productivity  </option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="new_name" class="form-label">Software Name</label>
+                                <input type="text" class="form-control" id="new_name" name="new_name" placeholder="Enter Software Name" required>
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label for="new_icon" class="form-label">Icon</label>
+                                <input type="file" class="form-control" id="new_icon" name="new_icon" accept=".png, .jpg, .jpeg, .svg" style="display: none;" onchange="updateIconPreview()" required>
+                                <button type="button" id="browseIconButton" class="btn btn-outline-primary mt-2" onclick="document.getElementById('new_icon').click();" style="display: block; padding: 10px; text-align: center; border: 2px solid #ccc; background-color: #f8f9fa; margin-top: 10px; border-radius: 4px;">
+                                    <div id="iconPlaceholder" style="width: 80px; height: 80px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; background-color: #f8f9fa; position: relative; margin-left: auto; margin-right: auto;">
+                                        <span id="browseIconText" style="position: relative; z-index: 1; font-size: 12px; color: #333;">Browse Icon</span>
+                                        <img id="iconPreview" src="" alt="Icon Preview" style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;" />
+                                    </div>
+                                </button>
+                            </div>
+
+                         
+                            <div class="mb-3">
+                                <label for="new_displayoption" class="form-label">Display Option</label>
+                                <select class="form-select" id="new_displayoption" name="new_displayoption" required>
+                                    <option value="">--Select Display Option--</option>
+                                    <option value="0">Current </option>
+                                    <option value="1">Future </option>
+                                    <option value="2">Other </option>
+                                </select>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="Submit" class="btn  btn-outline-primary">Save</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<section class="section">
+    
+    <div class="table-responsive">
+        <table class="table" id="softwareTable">
+            <thead>
+                <tr>
+                    <th>Software Capability</th>
+                    <th>Current</th>
+                    <th>Future</th>
+                    <th>Other</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Value.new_category</td>
+                        <td data-category="current" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            @foreach (var i in item.Value.current)
+                            {
+                                <img src="data:image/png;base64,@i.Icon" id="@i.SoftwareID" alt="Icon" style="width: 50px; height: 50px;" draggable="true" ondragstart="drag(event)" data-category="current" />
+                            }
+                        </td>
+                        <td data-category="future" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            @foreach (var i in item.Value.future)
+                            {
+                                <img src="data:image/png;base64,@i.Icon" id="@i.SoftwareID" alt="Icon" style="width: 50px; height: 50px;" draggable="true" ondragstart="drag(event)" data-category="future" />
+                            }
+                        </td>
+                        <td data-category="other" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            @foreach (var i in item.Value.other)
+                            {
+                                <img src="data:image/png;base64,@i.Icon" id="@i.SoftwareID" alt="Icon" style="width: 50px; height: 50px;" draggable="true" ondragstart="drag(event)" data-category="other" />
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+@section Scripts {
+     
+    <script>
+        function updateIconPreview() {
+            var fileInput = document.getElementById('new_icon');
+            var preview = document.getElementById('iconPreview');
+            var placeholder = document.getElementById('iconPlaceholder');
+            var browseIconText = document.getElementById('browseIconText');
+
+            // Check if a file has been selected
+            if (fileInput.files && fileInput.files[0]) {
+                var file = fileInput.files[0];
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    // Set the src of the preview image
+                    preview.src = e.target.result;
+                    preview.style.display = 'block'; // Show the preview
+                    browseIconText.style.display = 'none'; // Hide the placeholder text
+                }
+
+                // Read the file as a data URL
+                reader.readAsDataURL(file);
+            } else {
+                // If no file is selected, hide the preview and show the placeholder text
+                preview.style.display = 'none';
+                browseIconText.style.display = 'block'; // Show the placeholder text
+            }
+        }
+        $(document).ready(function () {
+             
+            $("#softwareTable").DataTable();
+
+            $('.addSoftwareCategory').on('change', function () {
+                var selectedValue = $(this).val();
+                console.log('Selected value:', selectedValue); 
+              
+
+                if (selectedValue !== '') {
+                    $.ajax({
+                        url: `/Software/SelectedSoftware`,
+                        type: 'GET',
+                        headers: {
+                            'Category': selectedValue
+                        },
+                        success: function (response) {
+                            var data = '<option value="">--- Select Software ---</option>';
+
+                            for (var i = 0; i < response.length ; i++) {
+                                data = data + `<option value=${response[i].new_softwareinventoryid}>${response[i].new_name}</option>`;
+                             }
+
+                            $(".setSoftware").html(data);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('AJAX error:', error);
+                        }
+                    });
+                } else {
+                    alert('Please select a category.');
+                }
+            });
+        });
+
+
+        function showOverlay() {
+            document.getElementById('loading-overlay').classList.remove('hidden');
+        }
+
+        function hideOverlay() {
+            document.getElementById('loading-overlay').classList.add('hidden');
+        }
+
+        // Show the overlay initially when the page starts loading
+        document.addEventListener("DOMContentLoaded", function () {
+            showOverlay();
+        });
+
+        // Hide the overlay once the page content is fully loaded
+        window.onload = function () {
+            hideOverlay();
+        };
+
+
+
+        // Drag and drop functionality
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+
+        function drop(ev) {
+            debugger;
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+            var element = document.getElementById(data);
+
+            // Check if the dragged item and the drop target are in the same row
+            var draggedRow = element.closest('tr');
+            var targetRow = ev.target.closest('tr');
+
+            if (draggedRow === targetRow) {
+                var newCategory = ev.target.closest('td').getAttribute('data-category');
+
+                // Only allow dropping if the target is a valid category column
+                if (newCategory) {
+                    ev.target.appendChild(element);
+
+                    // Update the category attribute of the dragged image
+                    element.setAttribute('data-category', newCategory);
+
+                    var optionSet_Value;
+                    switch (newCategory) {
+                        case "future" : 
+                        optionSet_Value = 1;
+                            break;
+
+                        case "current":
+                            optionSet_Value = 0;
+                            break;
+
+                        case "other":
+                            optionSet_Value = 2;
+                            break;
+                    }
+                    updateSoftwareCategory(data, optionSet_Value);
+                }
+            }
+        }
+
+        function updateSoftwareCategory(softwareId, newCategory) {
+            debugger;
+            $.ajax({
+                url: '/Software/DragAndDrop',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ softwareId: softwareId, displayOption: newCategory }),
+                success: function (data) {
+                    debugger;
+                    if (data.status != "Ok") {
+                        alert(data.status);
+                        showOverlay();
+                        location.reload();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    debugger;
+                    alert(error);
+                }
+            });
+        }
+
+
+    </script>
+}
+

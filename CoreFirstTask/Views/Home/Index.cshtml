@@ -1,0 +1,81 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using CoreFirstTask.Models
+@model IEnumerable<Invoice>
+
+<div class="pagetitle">
+
+    <h1>Home Page</h1>
+    <nav>
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"> <a asp-action="Index" asp-controller="Home">Home</a> </li>
+            <li class="breadcrumb-item">Pages</li>
+            <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
+    </nav>
+</div>
+<!-- End Page Title -->
+   
+
+<section class="section">
+    <h2>All Invoice</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped" id="invoiceTable">
+            <thead>
+                <tr>
+                    <th>Invoice Number</th>
+                    <th>Name</th>
+                    <th>Account Name</th> 
+                    <th>createdon</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.invoicenumber</td>
+                        <td>@item.name</td>
+                        <td>@item.accountidname</td>
+                        <td>@item.createdon</td>
+                        <td>
+                            <a class="btn btn-sm btn-outline-primary printInvoice"  href="@Url.Action("Export", "Home", new { invoiceId = item.invoiceid })">Print Invoice</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+
+@section Scripts {
+    
+
+    <script>
+        $(document).ready(function () {
+            $("#invoiceTable").DataTable();
+
+            // function printInvoice(event) {
+            //     event.preventDefault();
+            //     const invoiceId = this.id;
+
+            //     var printWindow = window.open('/Home/Export?invoiceId=' + invoiceId, '_blank');
+            //     printWindow.onload = function () {
+            //         printWindow.print();
+            //     };
+            // }
+
+            // // Attach the event listener to all elements with the class "printInvoice"
+            // document.querySelectorAll(".printInvoice").forEach(function (button) {
+            //     button.addEventListener("click", printInvoice);
+            // });
+        });
+    </script>
+}
+ 
+ 
+

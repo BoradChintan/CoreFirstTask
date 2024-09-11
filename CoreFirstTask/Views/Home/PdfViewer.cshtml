@@ -1,0 +1,211 @@
+﻿@{
+    ViewData["Title"] = "PdfViewer";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* Custom Styles for PDF Viewing and Downloading */
+    .pdf-viewer-container {
+        width: 80%;
+        max-width: 1200px; /* Adjust as needed */
+        margin: 0 auto;
+        padding: 20px;
+        text-align: center; /* Center align content */
+    }
+
+    .pdf-viewer-header {
+        background-color: #0066cc; /* Blue background */
+        color: #ffffff; /* White text */
+        padding: 10px;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px; /* Space below header */
+    }
+
+    .pdf-viewer-details {
+        margin: 20px 0;
+    }
+
+        .pdf-viewer-details p {
+            font-size: 14px;
+            color: #003366; /* Dark blue text */
+            margin: 5px 0;
+        }
+
+    .pdf-viewer-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        margin-bottom: 20px; /* Space below table */
+    }
+
+        .pdf-viewer-table th, .pdf-viewer-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .pdf-viewer-table th {
+            background-color: #f4f4f4;
+            font-weight: bold;
+        }
+
+        .pdf-viewer-table td {
+            background-color: #ffffff;
+        }
+
+    .pdf-print-button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        color: #ff6600; /* Orange text */
+        background-color: transparent; /* No background color */
+        border: 2px solid #ff6600; /* Orange border */
+        border-radius: 5px;
+        cursor: pointer;
+        text-transform: uppercase; /* Uppercase text */
+        transition: all 0.3s ease; /* Smooth transition */
+    }
+
+        .pdf-print-button:hover {
+            background-color: #ff6600; /* Orange background on hover */
+            color: #ffffff; /* White text on hover */
+        }
+</style>
+
+<div class="pagetitle d-flex align-items-center justify-content-between">
+    <div>
+        <h1>Invoice Details</h1>
+        <nav>
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"> <a asp-action="Index" asp-controller="Home">Home</a> </li>
+                <li class="breadcrumb-item">Pages</li>
+                <li class="breadcrumb-item active">Invoice Details</li>
+            </ol>
+        </nav>
+    </div>
+    <button id="print2Btn" class="pdf-print-button float-right">Print</button>
+</div>
+
+<!-- Print Button -->
+
+<section class="section">
+    <div class="pdf-viewer-container">
+        <!-- PDF Header -->
+        <div class="pdf-viewer-header">
+            Invoice Details
+        </div>
+
+        <div class="pdf-viewer-details">
+            <!-- Invoice Details -->
+            <p><strong>Invoice Number:</strong> @Model.invoicenumber</p>
+            <p><strong>Customer Name:</strong> @Model.customeridname</p>
+            <p><strong>Invoice Date:</strong> @Model.createdon.ToString("yyyy-MM-dd")</p>
+            <p><strong>Invoice Details:</strong> @Model.name</p>
+        </div>
+
+        <!-- Table -->
+        <table class="pdf-viewer-table">
+            <thead>
+                <tr>
+                    <th>Attribute</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Invoice Number</td>
+                    <td>@Model.invoicenumber</td>
+                </tr>
+                <tr>
+                    <td>Customer Name</td>
+                    <td>@Model.customeridname</td>
+                </tr>
+                <tr>
+                    <td>Invoice Date</td>
+                    <td>@Model.createdon.ToString("yyyy-MM-dd")</td>
+                </tr>
+                <tr>
+                    <td>Invoice Details</td>
+                    <td>@Model.name</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.getElementById('print2Btn').addEventListener('click', () => {
+            const printStyle = document.createElement('style');
+            printStyle.innerHTML = `
+        @@media print {
+                            /* Hide everything except the section tag */
+                            body * {
+                                visibility: hidden;
+                            }
+                            .section, .section * {
+                                visibility: visible;
+                            }
+                            .section {
+                                position: absolute;
+                                left: 0;
+                                top: 0;
+                                width: 100%;
+                                margin: 0;
+                                padding: 0;
+                            }
+                                     /* Ensure background graphics are printed */
+                .pdf-viewer-container, .pdf-viewer-header, .pdf-viewer-table th, .pdf-viewer-table td {
+                    -webkit-print-color-adjust: exact;
+                    color-adjust: exact;
+                }
+                        }
+                    `;
+            document.head.appendChild(printStyle);
+            window.print();
+            document.head.removeChild(printStyle);
+        });
+    </script>
+}
+
+
+
+
+
+
+
+@* ///////// Script part for library //////
+
+
+                   // Function to fetch PDF data from the server
+        async function fetchPdfData(invoiceId) {
+            const response = await fetch(`/Home/GetPdf?invoiceId=${invoiceId}`);
+            const data = await response.json();
+            return data.base64Pdf;
+        }
+
+        // Function to initialize the PDF viewer
+        async function initializePdfViewer(invoiceId) {
+            const base64Pdf = await fetchPdfData(invoiceId);
+            const pdfDataUri = `data:application/pdf;base64,${base64Pdf}`;
+
+            // Set the src of the embed to the PDF data URI
+            document.getElementById('pdfViewer').src = pdfDataUri;
+        }
+
+        // Print the PDF when the button is clicked
+        document.getElementById('printBtn').addEventListener('click', async () => {
+            const base64Pdf = await fetchPdfData('@Model.invoiceid');
+            const pdfDataUri = `data:application/pdf;base64,${base64Pdf}`;
+
+            // Create a temporary link element to trigger download
+            const link = document.createElement('a');
+            link.href = pdfDataUri;
+            link.download = 'Invoice.pdf'; // Filename for the downloaded PDF
+            link.click();
+        });
+
+        // Initialize the PDF viewer with the current invoice ID
+        const invoiceId = '@Model.invoiceid';
+        initializePdfViewer(invoiceId); *@
